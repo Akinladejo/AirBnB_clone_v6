@@ -2,10 +2,12 @@
 """
 Contains the class DBStorage
 """
-from os import getenv  # Add this import statement
+ from os import getenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 class DBStorage:
-    """interacts with the MySQL database"""
+    """Interacts with the MySQL database"""
     __engine = None
     __session = None
 
