@@ -2,7 +2,7 @@
 """
 Contains the class DBStorage
 """
-
+from os import getenv  # Add this import statement
 
 class DBStorage:
     """interacts with the MySQL database"""
