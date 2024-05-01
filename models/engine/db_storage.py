@@ -2,7 +2,7 @@
 """
 Contains the class DBStorage
 """
- from os import getenv
+from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
