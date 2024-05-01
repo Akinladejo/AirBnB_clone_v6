@@ -1,29 +1,36 @@
 #!/usr/bin/python3
-"""
-App views for AirBnB_clone_v3
-"""
-
-from flask import Blueprint, jsonify
+'''
+    This module contains variables and methods used to connect to API
+'''
+from flask import Flask, Blueprint, jsonify
+from api.v1.views import app_views
 from models import storage
+from flask_cors import CORS
+import os
 
-app_views = Blueprint("app_views", __name__, url_prefix="/api/v1")
+app = Flask(__name__)
+app.register_blueprint(app_views, url_prefix="/api/v1")
+cors = CORS(app, resources={'/*': {'origins': '0.0.0.0'}})
+host = os.getenv('HBNB_API_HOST', '0.0.0.0')
+port = int(os.getenv('HBNB_API_PORT', '5000'))
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-@app_views.route('/status', methods=['GET'], strict_slashes=False)
-def status():
-    """ returns status """
-    return jsonify({"status": "OK"})
 
-@app_views.route('/stats', methods=['GET'], strict_slashes=False)
-def count():
-    """ returns number of each objects by type """
-    total = {}
-    classes = {"Amenity": "amenities",
-               "City": "cities",
-               "Place": "places",
-               "Review": "reviews",
-               "State": "states",
-               "User": "users"}
-    for cls in classes:
-        count = storage.count(cls)
-        total[classes.get(cls)] = count
-    return jsonify(total)
+@app.teardown_appcontext
+def teardown_app(code):
+    '''
+        Handles teardown
+    '''
+    storage.close()
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    '''
+        Returns a JSON-formatted error response
+    '''
+    return jsonify({"error": "Not found"}), 404
+
+
+if __name__ == "__main__":
+    app.run(host=host, port=port, threaded=True)
