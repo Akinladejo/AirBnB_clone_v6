@@ -1,13 +1,14 @@
- #!/usr/bin/python3
-"""
-Flask application module
-"""
+#!/usr/bin/python3
 
-from flask import Flask
+"""main flask application file"""
+
 from api.v1.views import app_views
-from os import getenv
+from flask import Flask
+from flask import jsonify
 from flask_cors import CORS
+from os import getenv
 from models import storage
+
 
 def create_app():
     """Create and configure Flask app"""
@@ -26,6 +27,7 @@ def create_app():
         storage.close()
 
     return app
+
 
 if __name__ == '__main__':
     host = getenv('HBNB_API_HOST', '0.0.0.0')

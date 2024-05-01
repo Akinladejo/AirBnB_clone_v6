@@ -1,7 +1,9 @@
 #!/usr/bin/python3
-""" Index """
-from flask import jsonify
+
+"""index file for flask app"""
+
 from api.v1.views import app_views
+from flask import jsonify
 from models import storage
 
 
