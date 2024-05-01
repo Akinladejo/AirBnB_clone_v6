@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 """Script that imports a Blueprint and runs Flask."""
-import os
-from flask import Flask, make_response, jsonify
+
+from flask import Flask, jsonify
 from flask_cors import CORS
-from models import storage
+from os import getenv
+
 from api.v1.views import app_views
+from models import storage
 from flasgger import Swagger
 
 app = Flask(__name__)
