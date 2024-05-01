@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 """Script that imports a Blueprint and runs Flask."""
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 from os import getenv
+import os  # Import os module
 
 from api.v1.views import app_views
 from models import storage
@@ -47,6 +48,7 @@ def teardown_session(exception):
 def not_found(error):
     """Handles 404 Not Found errors."""
     return make_response(jsonify({"error": "Not found"}), 404)
+
 
 if __name__ == '__main__':
     # Get host and port from environment variables or use defaults
