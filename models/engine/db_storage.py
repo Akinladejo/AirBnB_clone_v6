@@ -6,7 +6,7 @@ Contains the class DBStorage
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from models.base_model import Base  # Import Base from your base_model.py file
+from models.base_model import Base, Amenity, City, Place, Review, State, User
 
 
 class DBStorage:
@@ -32,12 +32,15 @@ class DBStorage:
     def all(self, cls=None):
         """Query on the current database session"""
         new_dict = {}
-        for clss in classes:  # Assuming classes is the dictionary of classes
-            if cls is None or cls is classes[clss] or cls is clss:
-                objs = self.__session.query(classes[clss]).all()
-                for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    new_dict[key] = obj
+        if cls:
+            classes = [cls]
+        else:
+            classes = [Amenity, City, Place, Review, State, User]
+        for clss in classes:
+            objs = self.__session.query(clss).all()
+            for obj in objs:
+                key = obj.__class__.__name__ + '.' + obj.id
+                new_dict[key] = obj
         return new_dict
 
     def new(self, obj):
