@@ -3,7 +3,8 @@
 Contains the class DBStorage
 """
 
-import os
+import os 
+from os import getenv
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import Base
