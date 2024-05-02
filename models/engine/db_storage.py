@@ -2,7 +2,7 @@
 """
 Contains the class DBStorage
 """
- 
+
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -31,7 +31,7 @@ class DBStorage:
     def all(self, cls=None):
         """Query on the current database session"""
         new_dict = {}
-        for clss in classes:
+        for clss in classes:  # Assuming classes is the dictionary of classes
             if cls is None or cls is classes[clss] or cls is clss:
                 objs = self.__session.query(classes[clss]).all()
                 for obj in objs:
