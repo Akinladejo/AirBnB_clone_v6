@@ -52,4 +52,6 @@ def city_by_id(city_id):
             if key not in ['id', 'state_id', 'created_at', 'updated_at']:
                 setattr(city, key, value)
         storage.save()
-        return make_response(jsonify(city.to_dict()), 200)
+
+        return jsonify({})
+        
