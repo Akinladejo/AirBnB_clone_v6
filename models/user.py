@@ -34,4 +34,3 @@ class User(BaseModel, Base):
             import hashlib
             value = hashlib.md5(value.encode()).hexdigest()
         super().__setattr__(attribute, value)
-
