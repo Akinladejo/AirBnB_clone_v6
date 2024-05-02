@@ -21,7 +21,9 @@ def handle_amenities():
         amenity = Amenity(**req_data)
         storage.new(amenity)
         storage.save()
-        return make_response(jsonify(amenity.to_dict()), 201)
+
+        return jsonify({})
+        
 
 
 @app_views.route('/amenities/<amenity_id>', methods=['GET', 'DELETE', 'PUT'], strict_slashes=False)
