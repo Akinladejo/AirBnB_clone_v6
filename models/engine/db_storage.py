@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import Base  # Import Base from your base_model.py file
 
+
 class DBStorage:
     """Interacts with the MySQL database"""
     __engine = None
