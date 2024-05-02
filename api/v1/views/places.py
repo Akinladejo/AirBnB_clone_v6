@@ -35,7 +35,7 @@ def handle_places(city_id):
         place = Place(**req_data)
         setattr(place, 'city_id', city_id)
         place.save()
-        return jsonify(place.to_dict()), 201
+        return jsonify({place.to_dict()}), 201
 
 
 @app_views.route('/places/<place_id>', methods=['GET', 'DELETE', 'PUT'], strict_slashes=False)
@@ -59,7 +59,7 @@ def place_by_id(place_id):
             if key not in ['id', 'user_id', 'city_id', 'created_at', 'updated_at']:
                 setattr(place, key, value)
         place.save()
-        return jsonify(place.to_dict()), 200
+        return jsonify({place.to_dict()}), 200
 
 
 @app_views.route('/places_search', methods=['POST'], strict_slashes=False)
@@ -97,4 +97,4 @@ def places_search():
             response = requests.get(url)
             places.intersection_update(storage.get("Place", place_id) for place_id in json.loads(response.text))
 
-    return jsonify([place.to_dict() for place in places])
+    return jsonify({[place.to_dict() for place in places]})
