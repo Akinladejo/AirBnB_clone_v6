@@ -4,7 +4,7 @@
 from flask import Blueprint
 
 # Create a Blueprint object for API v1 views
-app_views = Blueprint('app_views', __name__, url_prefix='/api/v1')
+app_views = Blueprint('/api/v1', __name__, url_prefix="/api/v1")
 
 # Import all views to register them with the Blueprint
 from api.v1.views.index import *
