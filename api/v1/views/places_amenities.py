@@ -22,7 +22,7 @@ def places_amenities(place_id):
         l = [amenity.to_dict() for amenity in place.amenities]
     else:
         l = [storage.get("Amenity", id).to_dict() for id in place.amenity_ids]
-    return jsonify(l)
+    return jsonify({l})
 
 
 @app_views.route('/places/<place_id>/amenities/<amenity_id>', methods=['DELETE'], strict_slashes=False)
@@ -71,7 +71,7 @@ def link_amenity_place(place_id, amenity_id):
         place.amenity_ids.append(amenity_id)
 
     storage.save()
-    return make_response(jsonify(amenity.to_dict()), 201)
+    return make_response(jsonify{(amenity.to_dict()), 201})
 
 
 @app_views.route('/places/<place_id>/amenities/<amenity_id>', methods=['GET'], strict_slashes=False)
@@ -85,7 +85,7 @@ def handle_places_amenities(place_id, amenity_id=None):
     place_obj = storage.get("Place", place_id)
     if place_obj:
         if request.method == 'GET' and amenity_id is None:
-            return jsonify([amenity_obj.to_dict() for amenity_obj in place_obj.amenities]), 200
+            return jsonify({[amenity_obj.to_dict() for amenity_obj in place_obj.amenities]}), 200
         amenity_ids = [amenity_obj.id for amenity_obj in place_obj.amenities]
         amenity_obj = storage.get("Amenity", amenity_id)
         if amenity_obj:
