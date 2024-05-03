@@ -19,6 +19,7 @@ def get_amenities_in_place(place_id):
     amenities_list = [amenity.to_dict() for amenity in place.amenities]
     return jsonify(amenities_list)
 
+
 # Route to delete an amenity from a place
 @app_views.route('/places/<place_id>/amenities/<amenity_id>',
                  methods=['DELETE'], strict_slashes=False)
@@ -36,6 +37,7 @@ def delete_amenity_from_place(place_id, amenity_id):
     place.amenities.remove(amenity)
     place.save()
     return jsonify({}), 200
+
 
 # Route to link an amenity to a place
 @app_views.route('/places/<place_id>/amenities/<amenity_id>', methods=['POST'],
