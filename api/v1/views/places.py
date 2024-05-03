@@ -52,7 +52,8 @@ def create_place(city_id):
     required_fields = ['user_id', 'name']
     for field in required_fields:
         if field not in request_dict:
-            abort(400, f'Missing {field}')
+            abort(400, 'Missing {}'.format(field))
+
     user_id = request_dict['user_id']
     user = storage.get(User, user_id)
     if user is None:
