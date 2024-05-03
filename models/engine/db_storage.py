@@ -20,7 +20,7 @@ classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
 
 
-  class DBStorage:
+class DBStorage:
     """Interacts with the MySQL database"""
     __engine = None
     __session = None
@@ -75,4 +75,6 @@ classes = {"Amenity": Amenity, "City": City,
         """Call remove() method on the private session attribute"""
         self.__session.remove()
 
-        
+
+storage = DBStorage()
+storage.reload()
