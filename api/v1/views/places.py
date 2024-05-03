@@ -1,74 +1,112 @@
 #!/usr/bin/python3
-""" holds class Place """
-import models
-from models.base_model import BaseModel, Base
-from os import getenv
-import sqlalchemy
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
-from sqlalchemy.orm import relationship
+"""places Module"""
+from flask import abort, jsonify, request
+from api.v1.views import app_views
+from models import storage
+from models.place import Place
+from models.city import City
+from models.user import User
+from models.amenity import Amenity
+from models.state import State
 
-class Place(BaseModel, Base):
-    """ Representation of Place """
-    if models.storage_t == 'db':
-        __tablename__ = 'places'
-        city_id = Column(String(60), ForeignKey('cities.id'), nullable=False)
-        user_id = Column(String(60), ForeignKey('users.id'), nullable=False)
-        name = Column(String(128), nullable=False)
-        description = Column(String(1024))
-        number_rooms = Column(Integer, default=0, nullable=False)
-        number_bathrooms = Column(Integer, default=0, nullable=False)
-        max_guest = Column(Integer, default=0, nullable=False)
-        price_by_night = Column(Integer, default=0, nullable=False)
-        latitude = Column(Float)
-        longitude = Column(Float)
-        reviews = relationship("Review", backref="place",
-                               cascade="all, delete-orphan")
-        amenities = relationship("Amenity", secondary="place_amenity",
-                                 viewonly=False)
 
+@app_views.route('/cities/<city_id>/places', methods=['GET'], strict_slashes=False)
+def get_places_in_city(city_id):
+    """Retrieves the list of all places in a city"""
+    city = storage.get(City, city_id)
+    if city is None:
+        abort(404)
+    places_list = [place.to_dict() for place in city.places]
+    return jsonify(places_list)
+
+
+@app_views.route('/places/<place_id>', methods=['GET'], strict_slashes=False)
+def get_place_by_id(place_id):
+    """Retrieves a Place object"""
+    place = storage.get(Place, place_id)
+    if place is None:
+        abort(404)
+    return jsonify(place.to_dict())
+
+
+@app_views.route('/places/<place_id>', methods=['DELETE'], strict_slashes=False)
+def delete_place(place_id):
+    """Deletes a Place object"""
+    place = storage.get(Place, place_id)
+    if place is None:
+        abort(404)
+    place.delete()
+    storage.save()
+    return jsonify({}), 200
+
+
+@app_views.route('/cities/<city_id>/places', methods=['POST'], strict_slashes=False)
+def create_place(city_id):
+    """Creates a Place in a City"""
+    city = storage.get(City, city_id)
+    if city is None:
+        abort(404)
+    request_dict = request.get_json()
+    if request_dict is None:
+        abort(400, 'Not a JSON')
+    required_fields = ['user_id', 'name']
+    for field in required_fields:
+        if field not in request_dict:
+            abort(400, f'Missing {field}')
+    user_id = request_dict['user_id']
+    user = storage.get(User, user_id)
+    if user is None:
+        abort(404)
+    place = Place(**request_dict)
+    place.city_id = city_id
+    place.save()
+    return jsonify(place.to_dict()), 201
+
+
+@app_views.route('/places/<place_id>', methods=['PUT'], strict_slashes=False)
+def update_place(place_id):
+    """Updates a Place object"""
+    request_dict = request.get_json()
+    if request_dict is None:
+        abort(400, 'Not a JSON')
+    place = storage.get(Place, place_id)
+    if place is None:
+        abort(404)
+    ignored_keys = ['id', 'user_id', 'city_id', 'created_at', 'updated_at']
+    for key, value in request_dict.items():
+        if key not in ignored_keys:
+            setattr(place, key, value)
+    place.save()
+    return jsonify(place.to_dict())
+
+
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
+def places_search():
+    """Retrieves all Place objects based on the request JSON"""
+    request_dict = request.get_json()
+    if request_dict is None:
+        abort(400, 'Not a JSON')
+    states = request_dict.get('states', [])
+    cities = request_dict.get('cities', [])
+    amenities = request_dict.get('amenities', [])
+    
+    all_places = []
+    places = []
+    
+    if not states and not cities:
+        all_places = storage.all(Place).values()
     else:
-        city_id = ""
-        user_id = ""
-        name = ""
-        description = ""
-        number_rooms = 0
-        number_bathrooms = 0
-        max_guest = 0
-        price_by_night = 0
-        latitude = 0.0
-        longitude = 0.0
-        amenity_ids = []
-
-    def __init__(self, *args, **kwargs):
-        """ Initializes Place """
-        super().__init__(*args, **kwargs)
-
-        if models.storage_t != 'db':
-            self.reviews = []
-            self.amenities = []
-
-    def __setattr__(self, attribute, value):
-        """ Executes when setting a attribute to a place """
-        if attribute == 'password':
-            import hashlib
-            value = hashlib.md5(value.encode()).hexdigest()
-        super().__setattr__(attribute, value)
-
-    if models.storage_t != 'db':
-        @property
-        def reviews(self):
-            """ Getter attribute returns the list of Review instances """
-            review_list = []
-            for review in models.storage.all(Review).values():
-                if review.place_id == self.id:
-                    review_list.append(review)
-            return review_list
-
-        @property
-        def amenities(self):
-            """ Getter attribute returns the list of Amenity instances """
-            amenity_list = []
-            for amenity in models.storage.all(Amenity).values():
-                if amenity.place_id == self.id:
-                    amenity_list.append(amenity)
-            return amenity_list
+        for state_id in states:
+            state = storage.get(State, state_id)
+            if state:
+                all_places.extend(place for city in state.cities for place in city.places)
+        for city_id in cities:
+            city = storage.get(City, city_id)
+            if city:
+                all_places.extend(city.places)
+    
+    for place in all_places:
+        if not amenities or all(amenity_id in place.amenities for amenity_id in amenities):
+            places.append(place.to_dict())
+    
+    return jsonify(places)
