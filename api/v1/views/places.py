@@ -89,10 +89,10 @@ def places_search():
     states = request_dict.get('states', [])
     cities = request_dict.get('cities', [])
     amenities = request_dict.get('amenities', [])
-    
+
     all_places = []
     places = []
-    
+
     if not states and not cities:
         all_places = storage.all(Place).values()
     else:
@@ -104,9 +104,9 @@ def places_search():
             city = storage.get(City, city_id)
             if city:
                 all_places.extend(city.places)
-    
+
     for place in all_places:
         if not amenities or all(amenity_id in place.amenities for amenity_id in amenities):
             places.append(place.to_dict())
-    
+
     return jsonify(places)
