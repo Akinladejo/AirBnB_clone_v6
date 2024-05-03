@@ -4,17 +4,17 @@ Contains the class DBStorage
 """
 
 import models
-from models.amenity import Amenity
 from models.base_model import BaseModel, Base
+from models.amenity import Amenity
 from models.city import City
 from models.place import Place
 from models.review import Review
 from models.state import State
 from models.user import User
 from os import getenv
-import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm.exc import NoResultFound
 
 classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
@@ -75,6 +75,16 @@ class DBStorage:
         """Call remove() method on the private session attribute"""
         self.__session.remove()
 
+    def get(self, cls, id):
+        """Method to retrieve one object"""
+        try:
+            return self.__session.query(classes[cls]).filter_by(id=id).one()
+        except NoResultFound:
+            return None
 
-storage = DBStorage()
-storage.reload()
+    def count(self, cls=None):
+        """Count the number of objects in storage"""
+        if cls:
+            objs = self.all(cls)
+            return len(objs)
+        return len(self.all())
