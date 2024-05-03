@@ -54,7 +54,8 @@ def create_review(place_id):
     required_fields = ['user_id', 'text']
     for field in required_fields:
         if field not in request_data:
-            abort(400, f'Missing {field}')
+            abort(400, 'Missing {}'.format(field))
+
     user_id = request_data['user_id']
     user = storage.get(User, user_id)
     if user is None:
