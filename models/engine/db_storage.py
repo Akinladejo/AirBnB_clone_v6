@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import Base
 from models import base_model, amenity, city, place, review, state, user
+from models.amenity import Amenity
 
 
 class DBStorage:
