@@ -20,7 +20,7 @@ classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
 
 
-class DBStorage:
+  class DBStorage:
     """Interacts with the MySQL database"""
     __engine = None
     __session = None
@@ -69,25 +69,10 @@ class DBStorage:
         """Reload data from the database"""
         Base.metadata.create_all(self.__engine)
         sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(sess_factory)
-        self.__session = Session()
+        self.__session = scoped_session(sess_factory)
 
     def close(self):
         """Call remove() method on the private session attribute"""
         self.__session.remove()
 
-    def get(self, cls, id):
-        """Method to retrieve one object"""
-        objs = self.all(cls)
-        if objs:
-            for obj in objs.values():
-                if obj.id == id:
-                    return obj
-        return None
-
-    def count(self, cls=None):
-        """Method to count the number of objects in storage"""
-        if cls:
-            objs = self.all(cls)
-            return len(objs)
-        return len(self.all())
+        
