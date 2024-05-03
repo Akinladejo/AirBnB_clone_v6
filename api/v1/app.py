@@ -1,4 +1,4 @@
- #!/usr/bin/python3
+#!/usr/bin/python3
 """app Module"""
 from flask import Flask, jsonify
 from flask_cors import CORS
