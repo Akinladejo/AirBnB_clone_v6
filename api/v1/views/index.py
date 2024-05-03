@@ -1,24 +1,19 @@
 #!/usr/bin/python3
-"""index Module"""
-from flask import Blueprint, jsonify
+"""Main Flask application"""
+
+from flask import Flask
+from api.v1.views.index import app_views
 from models import storage
 
-app_views = Blueprint('app_views', __name__)
+app = Flask(__name__)
 
-@app_views.route('/status', methods=['GET'], strict_slashes=False)
-def status():
-    """Returns the status of the API"""
-    return jsonify({"status": "OK"}), 200
+# Register the app_views blueprint with the Flask app
+app.register_blueprint(app_views)
 
-@app_views.route('/stats', methods=['GET'], strict_slashes=False)
-def stats():
-    """Retrieves the number of objects for each model type"""
-    models = {
-        "amenities": storage.count("Amenity"),
-        "cities": storage.count("City"),
-        "places": storage.count("Place"),
-        "reviews": storage.count("Review"),
-        "states": storage.count("State"),
-        "users": storage.count("User")
-    }
-    return jsonify(models), 200
+@app.teardown_appcontext
+def close_storage(exception):
+    """Close the SQLAlchemy session"""
+    storage.close()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
