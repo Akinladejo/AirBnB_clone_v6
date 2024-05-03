@@ -1,37 +1,65 @@
 #!/usr/bin/python3
-""" Holds class User"""
-import hashlib
-from models.base_model import BaseModel, Base
-from os import getenv
-import sqlalchemy
-from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+"""users Module"""
+from api.v1.views import app_views
+from models import storage
+from models.user import User
+from flask import abort, jsonify, request
 
 
-class User(BaseModel, Base):
-    """Representation of a user"""
+@app_views.route('/users', methods=['GET'], strict_slashes=False)
+def get_users():
+    """Retrieves the list of all User objects"""
+    users = storage.all(User).values()
+    users_list = [user.to_dict() for user in users]
+    return jsonify(users_list)
 
-    if getenv("HBNB_TYPE_STORAGE") == 'db':
-        __tablename__ = 'users'
-        email = Column(String(128), nullable=False)
-        password = Column(String(128), nullable=False)
-        first_name = Column(String(128), nullable=True)
-        last_name = Column(String(128), nullable=True)
-        places = relationship("Place", backref="user")
-        reviews = relationship("Review", backref="user")
 
-    else:
-        email = ""
-        password = ""
-        first_name = ""
-        last_name = ""
+@app_views.route('/users/<user_id>', methods=['GET'], strict_slashes=False)
+def get_user(user_id):
+    """Retrieves a User object"""
+    user = storage.get(User, user_id)
+    if user is None:
+        abort(404)
+    return jsonify(user.to_dict())
 
-    def __init__(self, *args, **kwargs):
-        """Initializes user"""
-        super().__init__(*args, **kwargs)
 
-    def __setattr__(self, attribute, value):
-        """Executes when setting an attribute to a user"""
-        if attribute == 'password':
-            value = hashlib.sha256(value.encode()).hexdigest()
-        super().__setattr__(attribute, value)
+@app_views.route('/users/<user_id>', methods=['DELETE'], strict_slashes=False)
+def delete_user(user_id):
+    """Deletes a User object"""
+    user = storage.get(User, user_id)
+    if user is None:
+        abort(404)
+    user.delete()
+    storage.save()
+    return jsonify({}), 200
+
+
+@app_views.route('/users', methods=['POST'], strict_slashes=False)
+def create_user():
+    """Creates a User"""
+    request_data = request.get_json()
+    if request_data is None:
+        abort(400, 'Not a JSON')
+    if 'email' not in request_data:
+        abort(400, 'Missing email')
+    if 'password' not in request_data:
+        abort(400, 'Missing password')
+    user = User(**request_data)
+    user.save()
+    return jsonify(user.to_dict()), 201
+
+
+@app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
+def update_user(user_id):
+    """Updates a User object"""
+    request_data = request.get_json()
+    if request_data is None:
+        abort(400, 'Not a JSON')
+    user = storage.get(User, user_id)
+    if user is None:
+        abort(404)
+    for key, value in request_data.items():
+        if key not in ['id', 'email', 'created_at', 'updated_at']:
+            setattr(user, key, value)
+    user.save()
+    return jsonify(user.to_dict())
