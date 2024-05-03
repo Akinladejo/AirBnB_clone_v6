@@ -1,59 +1,43 @@
-#!/usr/bin/python3
-"""Script that imports a Blueprint and runs Flask."""
-
-from flask import Flask, jsonify, make_response
+ #!/usr/bin/python3
+"""app Module"""
+from flask import Flask, jsonify
 from flask_cors import CORS
 from os import getenv
-import os  # Import os module
-
-from api.v1.views import app_views
 from models import storage
-from flasgger import Swagger
+from api.v1.views import app_views
 
+# Create Flask app instance
 app = Flask(__name__)
 
-# Register API blueprint
-app.register_blueprint(app_views)
-
-# Configure CORS
+# Enable CORS for all origins
 CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
 
-# Configure Swagger
-app.config['SWAGGER'] = {
-    "swagger_version": "2.0",
-    "title": "Flasgger",
-    "headers": [
-        ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
-        ('Access-Control-Allow-Credentials', "true"),
-    ],
-    "specs": [
-        {
-            "version": "1.0",
-            "title": "HBNB API",
-            "endpoint": 'v1_views',
-            "description": 'HBNB REST API',
-            "route": '/v1/views',
-        }
-    ]
-}
-swagger = Swagger(app)
+# Register blueprints
+app.register_blueprint(app_views)
+
+# Disable strict slashes in URLs
+app.url_map.strict_slashes = False
+
+# Set jsonify to pretty print JSON responses
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
+# Retrieve host and port from environment variables, fallback to defaults
+host = getenv("HBNB_API_HOST", "0.0.0.0")
+port = int(getenv("HBNB_API_PORT", 5000))
+
 
 @app.teardown_appcontext
-def teardown_session(exception):
-    """Closes storage session."""
+def close_storage(exception):
+    """Calls storage.close() at the end of the request"""
     storage.close()
 
+
 @app.errorhandler(404)
-def not_found(error):
-    """Handles 404 Not Found errors."""
-    return make_response(jsonify({"error": "Not found"}), 404)
+def handle_404_error(error):
+    """Handles 404 errors by returning a JSON-formatted response"""
+    return jsonify({"error": "Not found"}), 404
 
 
-if __name__ == '__main__':
-    # Get host and port from environment variables or use defaults
-    host = os.getenv('HBNB_API_HOST', '0.0.0.0')
-    port = int(os.getenv('HBNB_API_PORT', 5000))
-    
-    # Run Flask app
+# Run the Flask app
+if __name__ == "__main__":
     app.run(host=host, port=port, threaded=True)
